@@ -1,5 +1,6 @@
 const express = require('express');
-const { getAllFromDatabase, addToDatabase, getFromDatabaseById, updateInstanceInDatabase, deleteFromDatabasebyId } = require('./db');
+const { getAllFromDatabase, addToDatabase, getFromDatabaseById, updateInstanceInDatabase, deleteFromDatabasebyId, deleteAllFromDatabase, createMeeting } = require('./db');
+const checkMillionDollarIdea = require('./checkMillionDollarIdea');
 const apiRouter = express.Router();
 const allMinions = getAllFromDatabase('minions');
 //console.log(allMinions);
@@ -71,7 +72,7 @@ apiRouter.get('/ideas', (req, res, next) => {
 
 // Post new idea
 
-apiRouter.post('/ideas', (req, res, next) => {
+apiRouter.post('/ideas', checkMillionDollarIdea, (req, res, next) => {
   const newIdea = addToDatabase('ideas', req.body);
   if(newIdea) {
     allIdeas.push(newIdea);
@@ -95,7 +96,7 @@ apiRouter.get('/ideas/:ideaId', (req, res, next) => {
 
 // Put single idea
 
-apiRouter.put('/ideas/:ideaId', (req, res, next) => {
+apiRouter.put('/ideas/:ideaId', checkMillionDollarIdea, (req, res, next) => {
   const ideaId = getFromDatabaseById('ideas', req.params.ideaId);
   if (ideaId) {
     const updatedIdea = Object.assign(ideaId, req.body);
@@ -115,5 +116,33 @@ apiRouter.delete('/ideas/:ideaId', (req, res, next) => {
     res.status(204).send();
   } else {
     res.status(404).send();
+  }
+})
+
+// Meeting routes
+
+const allMeetings = getAllFromDatabase('meetings');
+
+// Get all meetings
+
+apiRouter.get('/meetings', (req, res, next) => {
+  res.send(allMeetings);
+})
+
+// Post new meeting
+
+apiRouter.post('/meetings', (req, res, next) => {
+  newMeeting = createMeeting();
+  res.send(newMeeting);
+})
+
+// Delete all meetings
+
+apiRouter.delete('/meetings', (req, res, next) => {
+  const deletedMeetings = deleteAllFromDatabase('meetings');
+  if(deletedMeetings) {
+    res.status(204).send();
+  } else {
+    res.status(400).send();
   }
 })
