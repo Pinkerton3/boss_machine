@@ -64,7 +64,7 @@ apiRouter.delete('/minions/:minionId', (req, res, next) => {
 // Get all ideas
 
 apiRouter.get('/ideas', (req, res, next) => {
-  const allIdeas = getFromDatabase('ideas');
+  const allIdeas = getAllFromDatabase('ideas');
   res.send(allIdeas);
 })
 
@@ -73,7 +73,11 @@ apiRouter.get('/ideas', (req, res, next) => {
 apiRouter.post('/ideas', (req, res, next) => {
   const newIdea = addToDatabase('ideas', req.body);
   if(newIdea) {
-    
+    allIdeas.push(newIdea);
+    addToDatabase('ideas', newIdea);
+    res.status(201).send(newIdea);
+  } else {
+    res.status(400).send();
   }
 })
 
