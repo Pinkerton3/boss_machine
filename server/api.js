@@ -44,6 +44,7 @@ apiRouter.put('/minions/:minionId', (req, res, next) => {
   if (minionId) {
     const updatedMinion = Object.assign(minionId, req.body);
     updateInstanceInDatabase('minions', updatedMinion);
+    res.send(updatedMinion);
   } else {
     res.status(404).send();
   }
@@ -56,7 +57,7 @@ apiRouter.delete('/minions/:minionId', (req, res, next) => {
     deleteFromDatabasebyId('minions', req.params.minionId);
     res.status(204).send();
   } else {
-    res.status(400).send();
+    res.status(404).send();
   }
 })
 
@@ -96,15 +97,16 @@ apiRouter.get('/ideas/:ideaId', (req, res, next) => {
 
 // Put single idea
 
-apiRouter.put('/ideas/:ideaId', checkMillionDollarIdea, (req, res, next) => {
+apiRouter.put('/ideas/:ideaId', (req, res, next) => {
   const ideaId = getFromDatabaseById('ideas', req.params.ideaId);
-  if (ideaId) {
+  if (!ideaId) {
+    return res.status(404).send();
+  }
+  checkMillionDollarIdea(req, res, () => {
     const updatedIdea = Object.assign(ideaId, req.body);
     updateInstanceInDatabase('ideas', updatedIdea);
-    res.status(200).send();
-  } else {
-    res.status(404).send();
-  }
+    res.send(updatedIdea);
+  });
 });
 
 // Delete single idea
@@ -132,17 +134,15 @@ apiRouter.get('/meetings', (req, res, next) => {
 // Post new meeting
 
 apiRouter.post('/meetings', (req, res, next) => {
-  newMeeting = createMeeting();
-  res.send(newMeeting);
+  const newMeeting = createMeeting();
+  allMeetings.push(newMeeting);
+  res.status(201).send(newMeeting);
 })
 
 // Delete all meetings
 
 apiRouter.delete('/meetings', (req, res, next) => {
-  const deletedMeetings = deleteAllFromDatabase('meetings');
-  if(deletedMeetings) {
-    res.status(204).send();
-  } else {
-    res.status(400).send();
-  }
+  deleteAllFromDatabase('meetings');
+  allMeetings.splice(0, allMeetings.length);
+  res.status(204).send();
 })
